@@ -24,27 +24,10 @@ A real-time analytics platform built with Go that processes and visualizes event
 - Go 1.21 or higher
 - Web browser with JavaScript enabled
 
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/flitz123/RealTime-Analytics.git
-cd realtime-analytics
-
 
 ## Running the Project
 
-1. Create the directory structure and files as shown above
-2. Run `go mod tidy` to download dependencies
-3. Start the server: `go run cmd/server/main.go`
-4. Open `http://localhost:8080/dashboard.html` in your browser
-5. (Optional) Run the event generator: `go run cmd/generator/main.go`
-
-The dashboard will show real-time metrics updating every 5 seconds, and the event feed will display events as they arrive. The system demonstrates key concepts like:
-- Event-driven architecture
-- WebSocket communication
-- In-memory processing
-- Real-time analytics
-- RESTful API design
-
-This is a complete, working portfolio project that showcases Go's strengths in building real-time systems!
+1. Run `go mod tidy` to download dependencies
+2. Start the server: `go run cmd/server/main.go`
+3. Open `http://localhost:8080/dashboard.html` in your browser
+4. (Optional) Run the event generator: `go run cmd/generator/main.go`
