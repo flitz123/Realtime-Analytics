@@ -31,33 +31,3 @@ A real-time analytics platform built with Go that processes and visualizes event
 2. Start the server: `go run cmd/server/main.go`
 3. Open `http://localhost:8080/dashboard.html` in your browser
 
-## Deployment
-
-This project is deployable as a traditional Go service on a host that supports
-long-running processes, such as Render, Railway, Fly.io, or a VM. Set the
-`PORT` environment variable in production and bind the HTTP server to that
-port.
-
-### Render Backend
-
-Create a Render **Web Service** connected to this repository with:
-
-- **Runtime:** Go
-- **Build command:** `go build -o app ./cmd/server`
-- **Start command:** `./app`
-- **Health check path:** `/api/stats`
-
-Render supplies `PORT` automatically. If the frontend is hosted on Vercel,
-add a Render environment variable named `FRONTEND_URL` with the Vercel URL,
-for example `https://your-dashboard.vercel.app`.
-
-Before deploying the frontend, set `window.BACKEND_URL` in `web/config.js` to
-the Render service URL, for example `https://your-service.onrender.com`.
-
-It is not deployable as the complete application on Vercel as currently
-implemented. The dashboard can be hosted as static files on Vercel, but the
-Go server uses in-memory state, a background metrics ticker, and persistent
-WebSocket connections. Vercel Functions are request-based and do not provide
-that long-running WebSocket process. For a Vercel frontend, deploy the Go
-backend separately and configure the dashboard to use its API and WebSocket
-URL.
