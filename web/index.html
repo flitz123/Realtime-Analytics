@@ -219,6 +219,7 @@
         </div>
     </div>
 
+    <script src="/config.js"></script>
     <script>
         let ws;
         let simulationInterval;
@@ -226,7 +227,10 @@
         
         function connectWebSocket() {
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+            const backendUrl = window.BACKEND_URL || window.location.origin;
+            const backend = new URL(backendUrl);
+            const backendProtocol = backend.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${backendProtocol}//${backend.host}/ws`);
             
             ws.onopen = () => {
                 showConnectionStatus('Connected to server', 'connected');
@@ -351,7 +355,8 @@
         
         async function fetchInitialStats() {
             try {
-                const response = await fetch('/api/stats');
+                const backendUrl = window.BACKEND_URL || window.location.origin;
+                const response = await fetch(`${backendUrl}/api/stats`);
                 const stats = await response.json();
                 
                 document.getElementById('totalEvents').textContent = stats.total_events;

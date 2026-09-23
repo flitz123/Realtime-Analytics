@@ -7,8 +7,8 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/flitz123/RealTime-Analytics/internal/event"
-	"github.com/flitz123/RealTime-Analytics/internal/store"
+	"github.com/flitz123/Realtime-Analytics/internal/events"
+	"github.com/flitz123/Realtime-Analytics/internal/store"
 )
 
 type APIHandler struct {
@@ -19,16 +19,26 @@ func NewAPIHandler(store *store.EventStore) *APIHandler {
 	return &APIHandler{store: store}
 }
 
-func (h *APIHandler) RegisterRouters(router *mux.Router) {
-	var evt event.Event
+func (h *APIHandler) RegisterRoutes(router *mux.Router) {
+	router.HandleFunc("/api/events", h.IngestEvent).Methods(http.MethodPost)
+	router.HandleFunc("/api/events", h.GetRecentEvents).Methods(http.MethodGet)
+	router.HandleFunc("/api/stats", h.GetRecentStats).Methods(http.MethodGet)
+}
+
+func (h *APIHandler) IngestEvent(w http.ResponseWriter, r *http.Request) {
+	var evt events.Event
 	if err := json.NewDecoder(r.Body).Decode(&evt); err != nil {
 		http.Error(w, "Invalid event format", http.StatusBadRequest)
 		return
 	}
 
-	h.store.Add(&evt)
+	if evt.Timestamp.IsZero() {
+		evt.Timestamp = time.Now()
+	}
+	h.store.Add(evt)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Event received successfully"})
+	_ = json.NewEncoder(w).Encode(map[string]string{"message": "Event received successfully"})
 }
 
 func (h *APIHandler) GetRecentEvents(w http.ResponseWriter, r *http.Request) {
@@ -43,17 +53,11 @@ func (h *APIHandler) GetRecentEvents(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *APIHandler) GetRecentStats(w http.ResponseWriter, r *http.Request) {
-	stats := maps[string]interface{}{
-		"total_events": h.store.Count(),
-		"events_last_minute": len(h.store.CountRecent(time.Minute)),
-		"events_last_hour": len(h.store.CountRecent(time.Hour)),
+	stats := map[string]interface{}{
+		"total_events":       h.store.GetCount(),
+		"events_last_minute": len(h.store.GetRecent(time.Minute)),
+		"events_last_hour":   len(h.store.GetRecent(time.Hour)),
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stats)
-}
-
-func (h *APIHandler) RegisterRoutes(router *mux.Router) {
-    router.HandleFunc("/api/events", h.IngestEvent).Methods("POST")
-    router.HandleFunc("/api/events", h.GetRecentEvents).Methods("GET")
-    router.HandleFunc("/api/stats", h.GetEventStats).Methods("GET")
 }

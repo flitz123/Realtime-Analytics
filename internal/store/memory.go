@@ -4,21 +4,21 @@ import (
 	"sync"
 	"time"
 
-	"github.com/flitz123/RealTime-Analytics/internal/event"
+	"github.com/flitz123/Realtime-Analytics/internal/events"
 )
 
 type EventStore struct {
 	mu     sync.RWMutex
-	events []event.Event
+	events []events.Event
 }
 
 func NewEventStore() *EventStore {
 	return &EventStore{
-		events: make([]event.Event, 0),
+		events: make([]events.Event, 0),
 	}
 }
 
-func (s *EventStore) Add(event event.Event) {
+func (s *EventStore) Add(event events.Event) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.events = append(s.events, event)
@@ -28,12 +28,12 @@ func (s *EventStore) Add(event event.Event) {
 	}
 }
 
-func (s *EventStore) GetRecent(duration time.Duration) []event.Event {
+func (s *EventStore) GetRecent(duration time.Duration) []events.Event {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	cutoff := time.Now().Add(-duration)
-	var recent []event.Event
+	var recent []events.Event
 
 	for i := len(s.events) - 1; i >= 0; i-- {
 		if s.events[i].Timestamp.After(cutoff) {
@@ -43,12 +43,12 @@ func (s *EventStore) GetRecent(duration time.Duration) []event.Event {
 	return recent
 }
 
-func (s *EventStore) GetByType(eventType event.EventType, duration time.Duration) []event.Event {
+func (s *EventStore) GetByType(eventType events.EventType, duration time.Duration) []events.Event {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
 	cutoff := time.Now().Add(-duration)
-	var filtered []event.Event
+	var filtered []events.Event
 
 	for i := len(s.events) - 1; i >= 0; i-- {
 		if s.events[i].Type == eventType && s.events[i].Timestamp.After(cutoff) {

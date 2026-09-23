@@ -5,16 +5,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/flitz123/RealTime-Analytics/internal/event"
-	"github.com/flitz123/RealTime-Analytics/internal/store"
+	"github.com/flitz123/Realtime-Analytics/internal/events"
+	"github.com/flitz123/Realtime-Analytics/internal/store"
 )
 
 type Metrics struct {
-	TotalEvents           int                     `json:"total_events"`
-	EventsPerMinute       float64                 `json:"events_per_minute"`
-	EventTypeDistribution map[event.EventType]int `json:"event_type_distribution"`
-	ActiveUsers           int                     `json:"active_users"`
-	Timestamp             time.Time               `json:"timestamp"`
+	TotalEvents           int                      `json:"total_events"`
+	EventsPerMinute       float64                  `json:"events_per_minute"`
+	EventTypeDistribution map[events.EventType]int `json:"event_type_distribution"`
+	ActiveUsers           int                      `json:"active_users"`
+	Timestamp             time.Time                `json:"timestamp"`
 }
 
 type Processor struct {
@@ -50,7 +50,7 @@ func (p *Processor) updateMetrics() {
 	p.metrics.TotalEvents = p.store.GetCount()
 	p.metrics.EventsPerMinute = float64(len(recentEvents))
 	p.metrics.Timestamp = time.Now()
-	distribution := make(map[event.EventType]int)
+	distribution := make(map[events.EventType]int)
 	uniqueUsers := make(map[string]bool)
 
 	for _, e := range recentEvents {

@@ -9,9 +9,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
 
-	"github.com/flitz123/RealTime-Analytics/internal/analytics"
-	"github.com/flitz123/RealTime-Analytics/internal/event"
-	"github.com/flitz123/RealTime-Analytics/internal/store"
+	"github.com/flitz123/Realtime-Analytics/internal/analytics"
+	"github.com/flitz123/Realtime-Analytics/internal/events"
+	"github.com/flitz123/Realtime-Analytics/internal/store"
 )
 
 var upgrader = websocket.Upgrader{
@@ -22,15 +22,15 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-type WebSocketHandler struct {
+type WebSocketHub struct {
 	clients   map[*websocket.Conn]bool
 	mu        sync.Mutex
 	store     *store.EventStore
 	processor *analytics.Processor
 }
 
-func NewWebSocketHandler(store *store.EventStore, processor *analytics.Processor) *WebSocketHandler {
-	return &WebSocketHandler{
+func NewWebSocketHub(store *store.EventStore, processor *analytics.Processor) *WebSocketHub {
+	return &WebSocketHub{
 		store:     store,
 		processor: processor,
 		clients:   make(map[*websocket.Conn]bool),
@@ -77,7 +77,7 @@ func (h *WebSocketHub) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 			break
 		}
 
-		var evt event.Event
+		var evt events.Event
 		if err := json.Unmarshal(message, &evt); err != nil {
 			log.Printf("Failed to unmarshal event: %v", err)
 			continue
@@ -89,14 +89,14 @@ func (h *WebSocketHub) HandleWebSocket(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h *WebSocketHub) broadcastEvent(evt *event.Event) {
+func (h *WebSocketHub) broadcastEvent(evt *events.Event) {
 	eventJSON, err := evt.ToJSON()
 	if err != nil {
 		return
 	}
 
-	h.mu.RLock()
-	defer h.mu.RUnlock()
+	h.mu.Lock()
+	defer h.mu.Unlock()
 
 	for client := range h.clients {
 		if err := client.WriteMessage(websocket.TextMessage, eventJSON); err != nil {
